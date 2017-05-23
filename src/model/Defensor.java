@@ -4,8 +4,8 @@ import java.util.List;
 
 public class Defensor<T> extends Individual<T> {
 
-	public Defensor(List<Gene<? extends T>> genes) {
-		super(genes);
+	public Defensor(DefensorFactory<T> factory, List<Gene<? extends T>> genes) {
+		super(factory, genes);
 	}
 
 	@Override

@@ -14,6 +14,11 @@ public class DefensorFactory<T> implements IndividualFactory<T> {
 			genes.add(new Gene<>(aleleSet));
 		}
 		
-		return new Defensor<T>(genes);
+		return getIndividual(genes);
+	}
+
+	@Override
+	public Individual<T> getIndividual(List<Gene<? extends T>> genes) {
+		return new Defensor<T>(this, genes);
 	}
 }

@@ -1,7 +1,9 @@
 package algorithm;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import model.Couple;
 import model.Individual;
@@ -22,6 +24,8 @@ public class GeneticAlgorithm<T> {
 	private static final int N = 0;
 	private static final int GENERATIONS = 0;
 	
+	private int generation = 0;
+	
 	private Population<T> population;
 	
 	public void run(IndividualFactory<T> individualFactory) {
@@ -32,13 +36,17 @@ public class GeneticAlgorithm<T> {
 	}
 	
 	private void createPopulation(IndividualFactory<T> individualFactory, int N) {
-		this.population = new Population<>(individualFactory, N);
+		this.population = new Population<>(individualFactory, N, generation++);
 	}
 	
 	private void replacePopulation(ReplacementMethod replacementMethod) {
 		switch (replacementMethod) {
 		case METHOD_1:
-			this.population = firstReplacementMethod(this.population);
+			this.population = firstReplacementMethod(population);
+		case METHOD_2:
+			this.population = secondReplacementMethod(population);
+		case METHOD_3:
+			this.population = thirdReplacementMethod(population);
 		default:
 			throw new UnsupportedOperationException(
 					"Unknown replacement method: " + replacementMethod);
@@ -50,24 +58,68 @@ public class GeneticAlgorithm<T> {
 		for (int i = 0; i < population.size() / 2; i++) {
 			Couple<T> parents = new Couple<>(selectIndividuals(SELECTION_METHOD, 2));
 			List<Individual<T>> children = crossIndividuals(REPRODUCTION_METHOD, parents).toList();
-			mutateIndividuals(MUTATION_METHOD, children);
+			children = mutateIndividuals(MUTATION_METHOD, children);
 			newIndividuals.addAll(children);
 		}
-		return new Population<>(newIndividuals);
+		return new Population<>(newIndividuals, generation++);
+	}
+	
+	private Population<T> secondReplacementMethod(Population<T> population) {
+		List<Individual<T>> newIndividuals = new ArrayList<>();
+		List<Individual<T>> children = getChildren(REPRODUCTION_METHOD, population);
+		newIndividuals.addAll(children);
+		List<Individual<T>> oldIndividuals = population.getIndividuals();
+		Collections.shuffle(oldIndividuals);
+		newIndividuals.addAll(oldIndividuals.subList(0, population.size() - children.size()));
+		return new Population<>(newIndividuals, generation++);
+	}
+	
+	private Population<T> thirdReplacementMethod(Population<T> population) {
+		List<Individual<T>> newIndividuals = new ArrayList<>();		
+		List<Individual<T>> children = getChildren(REPRODUCTION_METHOD, population);
+		List<Individual<T>> oldIndividuals = population.getIndividuals();
+		Collections.shuffle(oldIndividuals);
+		newIndividuals.addAll(oldIndividuals.subList(0, population.size() - children.size()));
+		oldIndividuals.addAll(newIndividuals);
+		Collections.shuffle(oldIndividuals);
+		newIndividuals.addAll(oldIndividuals.subList(0, children.size()));
+		return new Population<>(newIndividuals, generation++);
+	}
+	
+	private List<Individual<T>> getChildren(ReproductionMethod reproductionMethod, Population<T> population) {
+		List<Couple<T>> parents = makeCouples(population.getIndividuals());
+		return parents.stream()
+				.map(couple -> crossIndividuals(reproductionMethod, couple).toList())
+				.flatMap(List::stream)
+				.collect(Collectors.toList());
 	}
 	
 	private List<Individual<T>> selectIndividuals(SelectionMethod selectionMethod, int K) {	
 		switch (selectionMethod) {
 		case ELITE:
-			return SelectionAlgorithms.elite(this.population, K);
+			return SelectionAlgorithms.elite(population, K);	
+		case BOLTZMANN:
+			return SelectionAlgorithms.boltzmann(population, K);
+		case RANDOM:
+			return SelectionAlgorithms.random(population, K);
+		case RANKING:
+			return SelectionAlgorithms.ranking(population, K);
+		case ROULETTE:
+			return SelectionAlgorithms.roulette(population, K);
+		case TOURNAMENT_DET:
+			return SelectionAlgorithms.detTournament(population, K);
+		case TOURNAMENT_PROB:
+			return SelectionAlgorithms.probTournament(population, K);
+		case UNIVERSAL:
+			return SelectionAlgorithms.universal(population, K);
 		default:
 			throw new UnsupportedOperationException(
 					"Unknown selection method: " + selectionMethod);
 		}
 	}
 	
-	@SuppressWarnings("unused")
 	private List<Couple<T>> makeCouples(List<Individual<T>> individuals) {
+		Collections.shuffle(individuals);
 		List<Couple<T>> couples = new ArrayList<>();
 		for (int i = 0; i < individuals.size(); i += 2) {
 			couples.add(new Couple<>(individuals.get(0), individuals.get(1)));
@@ -79,22 +131,28 @@ public class GeneticAlgorithm<T> {
 		switch (reproductionMethod) {
 		case ONE_POINT:
 			return ReproductionAlgorithms.onePoint(couple);
+		case DOUBLE_POINT:
+			return ReproductionAlgorithms.twoPoints(couple);
+		case RING:
+			return ReproductionAlgorithms.ring(couple);
+		case UNIFORM:
+			return ReproductionAlgorithms.uniform(couple);
 		default:
 			throw new UnsupportedOperationException(
 					"Unknown reproduction method: " + reproductionMethod);
 		}
 	}
 	
-	private void mutateIndividuals(MutationMethod mutationMethod, List<Individual<T>> individuals) {
-		for (Individual<T> individual : individuals) {
-			this.mutateIndividual(mutationMethod, individual);
-		}
+	private List<Individual<T>> mutateIndividuals(MutationMethod mutationMethod, List<Individual<T>> individuals) {
+		return individuals.stream()
+				.map(individual -> this.mutateIndividual(mutationMethod, individual))
+				.collect(Collectors.toList());
 	}
 	
-	private void mutateIndividual(MutationMethod mutationMethod, Individual<T> individual) {
+	private Individual<T> mutateIndividual(MutationMethod mutationMethod, Individual<T> individual) {
 		switch (mutationMethod) {
 		case SINGLE_GENE:
-			MutationAlgorithms.singleGene(individual);
+			return MutationAlgorithms.singleGene(individual);
 		default:
 			throw new UnsupportedOperationException(
 					"Unknown mutation method: " + mutationMethod);

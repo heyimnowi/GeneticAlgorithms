@@ -21,4 +21,23 @@ public class Gene<T> {
 	T getAlele() {
 		return alele;
 	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Gene<?> other = (Gene<?>) obj;
+		if (alele == null) {
+			if (other.alele != null)
+				return false;
+		} else if (!alele.equals(other.alele))
+			return false;
+		return true;
+	}
+	
+	
 }

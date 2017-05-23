@@ -21,6 +21,10 @@ public class Couple<T> {
 		this.individual1 = individual1;
 		this.individual2 = individual2;
 	}
+	
+	public int chromosomeSize() {
+		return individual1.chromosomeSize();
+	}
 
 	public Individual<T> getIndividual1() {
 		return individual1;
