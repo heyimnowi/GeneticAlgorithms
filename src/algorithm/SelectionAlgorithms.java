@@ -3,6 +3,7 @@ package algorithm;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -15,13 +16,13 @@ import model.Population;
 
 public class SelectionAlgorithms {
 	
-	private static final int T = 0; // TODO
-	private static final int M = 0;
+	private static final double T = 1; // TODO
+	private static final int M = 2;
 	
 	public static <T> List<Individual<T>> elite(Population<T> population, int K) {
 		return getFitnessMap(population).entrySet()
 	        .stream()
-	        .sorted(Map.Entry.comparingByValue())
+	        .sorted(Comparator.comparingDouble((Map.Entry<Individual<T>, Double> e) -> e.getValue()).reversed())
 	        .map(Map.Entry::getKey)
 	        .limit(K)
 			.collect(Collectors.toList());
@@ -29,8 +30,10 @@ public class SelectionAlgorithms {
 	
 	public static <T> List<Individual<T>> random(Population<T> population, int K) {
 		List<Individual<T>> individuals = population.getIndividuals();
-		Collections.shuffle(individuals);
-		return individuals.stream().limit(K).collect(Collectors.toList());
+		return IntStream.range(0, K)
+			.boxed()
+			.map(i -> individuals.get(new Random().nextInt(individuals.size())))
+			.collect(Collectors.toList());
 	}
 	
 	public static <T> List<Individual<T>> roulette(Population<T> population, int K) {
@@ -49,7 +52,7 @@ public class SelectionAlgorithms {
 		double[] rands = new double[K];
 		double r = new Random().nextDouble();
 		for (int i = 1; i <= K; i++) {
-			rands[i] = (r + i - i) / K;
+			rands[i - 1] = (r + i - 1) / K;
 		}
 		return selectWithRandoms(getRelativeFitnessMap(population), K, rands);
 	}
@@ -96,10 +99,10 @@ public class SelectionAlgorithms {
 	public static <T> List<Individual<T>> ranking(Population<T> population, int K) {
 		List<Individual<T>> individuals = population.getIndividuals();
 		individuals.sort(Utils.getFitnessComparator());
-		double n = IntStream.range(1, individuals.size()).sum();
+		double n = IntStream.range(1, individuals.size() + 1).sum();
 		Map<Individual<T>, Double> rankingProbability = IntStream.range(0, individuals.size())
 			.boxed()
-			.collect(Collectors.toMap((Integer i) -> individuals.get(i), (Integer i) -> (n - i - 1) / n));
+			.collect(Collectors.toMap((Integer i) -> individuals.get(i), (Integer i) -> (i + 1) / n));
 		return roulette(rankingProbability, K);
 	}
 	
@@ -115,10 +118,10 @@ public class SelectionAlgorithms {
 				newIndividuals.add(entryList.get(0).getKey());
 			}
 			for (int i = 1; i < entryList.size(); i++) {				
-				if (acum <= rand && rand < (acum + entryList.get(i + 1).getValue())) {
-					newIndividuals.add(entryList.get(i + 1).getKey());
+				if (acum <= rand && rand < (acum + entryList.get(i).getValue())) {
+					newIndividuals.add(entryList.get(i).getKey());
 				}
-				acum += entryList.get(i + 1).getValue();
+				acum += entryList.get(i).getValue();
 			}
 		}
 		return newIndividuals;

@@ -37,4 +37,9 @@ public class Couple<T> {
 	public List<Individual<T>> toList() {
 		return Arrays.asList(individual1, individual2);
 	}
+	
+	@Override
+	public String toString() {
+		return "Couple: (" + individual1 + ", " + individual2 + ")";
+	}
 }

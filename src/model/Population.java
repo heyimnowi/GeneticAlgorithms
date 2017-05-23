@@ -3,6 +3,7 @@ package model;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Population<T> {
 
@@ -31,5 +32,11 @@ public class Population<T> {
 
 	public double getGeneration() {
 		return generation;
+	}
+	
+	public String toString() {
+		return "POp at : " + generation + " [" + String.join(", ", individuals.stream()
+				.map(i -> i.toString())
+				.collect(Collectors.toList())) + "]";
 	}
 }

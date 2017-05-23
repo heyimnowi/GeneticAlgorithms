@@ -9,7 +9,7 @@ import model.Individual;
 
 public class MutationAlgorithms {
 
-	private static final double p = 0; // TODO
+	private static final double p = 0.3; // TODO
 	
 	public static <T> Individual<T> singleGene(Individual<T> individual) {
 		return mutateGenes(individual, true);

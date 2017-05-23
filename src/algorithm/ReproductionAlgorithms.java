@@ -12,13 +12,18 @@ public class ReproductionAlgorithms {
 	private static final double p = 0.5; // TODO
 	
 	public static <T> Couple<T> onePoint(Couple<T> couple) {
-		int locus = new Random().nextInt(couple.chromosomeSize());
+		int locus = new Random().nextInt(couple.chromosomeSize() + 1);
 		return between(couple, locus, couple.chromosomeSize(), false);
 	}
 	
 	public static <T> Couple<T> twoPoints(Couple<T> couple) {
-		int locusStart = new Random().nextInt(couple.chromosomeSize());
-		int locusEnd = new Random().nextInt(couple.chromosomeSize());
+		int locusStart = new Random().nextInt(couple.chromosomeSize() + 1);
+		int locusEnd = new Random().nextInt(couple.chromosomeSize() + 1);
+		if (locusEnd < locusStart) {
+			locusStart = locusStart ^ locusEnd;
+			locusEnd = locusStart ^ locusEnd;
+			locusStart = locusStart ^ locusEnd; 
+		}
 		return between(couple, locusStart, locusEnd, false);
 	}
 	
@@ -29,9 +34,9 @@ public class ReproductionAlgorithms {
 		boolean invert = false;
 		if (locusEnd < locusStart) {
 			invert = true;
-			locusStart = locusStart | locusEnd;
-			locusEnd = locusStart | locusEnd;
-			locusStart = locusStart | locusEnd; 
+			locusStart = locusStart ^ locusEnd;
+			locusEnd = locusEnd ^ locusStart;
+			locusStart = locusStart ^ locusEnd; 
 		}
 		return between(couple, locusStart, locusEnd, invert);
 	}
@@ -57,13 +62,18 @@ public class ReproductionAlgorithms {
 		List<Gene<? extends T>> genes1 = new ArrayList<>();
 		List<Gene<? extends T>> genes2 = new ArrayList<>();
 		for (int i = 0; i < couple.chromosomeSize(); i++) {
-			if ((i <= start || i >= end) && !invert) {
+			if ((i < start || i >= end)) {
 				genes1.add(couple.getIndividual1().getGene(i));
 				genes2.add(couple.getIndividual2().getGene(i));
 			} else {
 				genes2.add(couple.getIndividual1().getGene(i));
 				genes1.add(couple.getIndividual2().getGene(i));
 			}
+		}
+		if (invert) {
+			List<Gene<? extends T>> aux = genes2;
+			genes2 = genes1;
+			genes1 = aux; 
 		}
 		return makeCouple(couple, genes1, genes2);
 	}

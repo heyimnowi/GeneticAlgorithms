@@ -18,7 +18,7 @@ public class Gene<T> {
 		return new Gene<>(aleleSet);
 	}
 	
-	T getAlele() {
+	public T getAlele() {
 		return alele;
 	}
 
@@ -39,5 +39,8 @@ public class Gene<T> {
 		return true;
 	}
 	
-	
+	@Override
+	public String toString() {
+		return alele.toString();
+	}
 }

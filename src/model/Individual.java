@@ -2,6 +2,7 @@ package model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public abstract class Individual<T> {
 
@@ -30,4 +31,14 @@ public abstract class Individual<T> {
 	}
 	
 	public abstract double getFitness();
+	
+	public Individual<T> clone() {
+		return factory.getIndividual(genes);
+	}
+	
+	public String toString() {
+		return "Ind: [" + String.join(", ", genes.stream()
+				.map(g -> g.toString())
+				.collect(Collectors.toList())) + "]";
+	}
 }
