@@ -13,7 +13,13 @@ public class MutationAlgorithms {
 	private static final double p = Props.instance().getMutationP();
 	
 	public static <T> Individual<T> singleGene(Individual<T> individual) {
-		return mutateGenes(individual, true);
+		List<Gene<? extends T>> newGenes = new ArrayList<>();
+		newGenes.addAll(individual.getGenes());
+		if (new Random().nextDouble() < p) {
+			int locus = new Random().nextInt(individual.chromosomeSize());
+			newGenes.set(locus, individual.getGenes().get(locus).mutate());
+		}
+		return individual.mutate(newGenes);
 	}
 	
 	public static <T> Individual<T> multiGene(Individual<T> individual) {
@@ -26,9 +32,6 @@ public class MutationAlgorithms {
 		for (int i = 0; i < individual.getGenes().size(); i++) {
 			if (new Random().nextDouble() < p) {
 				newGenes.set(i, individual.getGenes().get(i).mutate());
-				if (singleGene) {					
-					break;
-				}
 			}
 		}
 		return individual.mutate(newGenes);

@@ -103,7 +103,7 @@ public class SelectionAlgorithms {
 		double n = IntStream.range(1, individuals.size() + 1).sum();
 		Map<Individual<T>, Double> rankingProbability = IntStream.range(0, individuals.size())
 			.boxed()
-			.collect(Collectors.toMap((Integer i) -> individuals.get(i), (Integer i) -> (i + 1) / n));
+			.collect(Collectors.toMap((Integer i) -> individuals.get(i), (Integer i) -> (individuals.size() - i) / n));
 		return roulette(rankingProbability, K);
 	}
 	

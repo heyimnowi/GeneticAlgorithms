@@ -17,7 +17,8 @@ public class TestIndividualFactory implements IndividualFactory<Integer> {
 			Arrays.asList(2, 3, 4),
 			Arrays.asList(3, 4, 5),
 			Arrays.asList(4, 5, 6),
-			Arrays.asList(5, 6, 7)
+			Arrays.asList(5, 6, 7),
+			Arrays.asList(1, 2, 8)
 	);
 	
 	@Override

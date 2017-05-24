@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
-import util.Props;
 import model.Couple;
 import model.Individual;
 import model.IndividualFactory;
@@ -14,6 +14,7 @@ import model.Population;
 import model.ReplacementMethod;
 import model.ReproductionMethod;
 import model.SelectionMethod;
+import util.Props;
 
 public class GeneticAlgorithm<T> {
 
@@ -60,12 +61,12 @@ public class GeneticAlgorithm<T> {
 	
 	private Population<T> firstReplacementMethod(Population<T> population) {
 		List<Individual<T>> newIndividuals = new ArrayList<>();
-		for (int i = 0; i < population.size() / 2; i++) {
+		IntStream.range(0, population.size() / 2).forEach(i -> {
 			Couple<T> parents = new Couple<>(selectIndividuals(Props.instance().getSelectionMethod1(), 2));
 			List<Individual<T>> children = crossIndividuals(Props.instance().getReproductionMethod(), parents).toList();
 			children = mutateIndividuals(Props.instance().getMutationMethod(), children);
 			newIndividuals.addAll(children);
-		}
+		});
 		return new Population<>(newIndividuals, generation++);
 	}
 	

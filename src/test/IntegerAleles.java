@@ -6,8 +6,7 @@ import model.AleleSet;
 
 public class IntegerAleles implements AleleSet<Integer> {
 	@Override
-	public Integer getAlele() {
+	public Integer getRandomAlele() {
 		return new Random().nextInt(10);
 	}
-	
 }
