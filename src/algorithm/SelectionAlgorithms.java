@@ -11,13 +11,14 @@ import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import util.Props;
 import model.Individual;
 import model.Population;
 
 public class SelectionAlgorithms {
 	
-	private static final double T = 1; // TODO
-	private static final int M = 2;
+	private static final double T = Props.instance().getT();
+	private static final int M = Props.instance().getM();
 	
 	public static <T> List<Individual<T>> elite(Population<T> population, int K) {
 		return getFitnessMap(population).entrySet()

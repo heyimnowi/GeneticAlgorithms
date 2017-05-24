@@ -3,14 +3,17 @@ package model;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DefensorFactory<T> implements IndividualFactory<T> {
+import util.EquipmentReader;
 
-	public Individual<T> getIndividual() {
-		// TODO
-		List<AleleSet<? extends T>> aleleSets = new ArrayList<>();
+public class DefensorFactory implements IndividualFactory<Object> {
+
+	public Individual<Object> getIndividual() {
+		List<AleleSet<? extends Object>> aleleSets = new ArrayList<>();		
+		aleleSets.add(new HeightSet());
+		aleleSets.addAll(EquipmentReader.instance().getItemSets());
 		
-		List<Gene<? extends T>> genes = new ArrayList<>();
-		for (AleleSet<? extends T> aleleSet: aleleSets) {
+		List<Gene<? extends Object>> genes = new ArrayList<>();
+		for (AleleSet<? extends Object> aleleSet: aleleSets) {
 			genes.add(new Gene<>(aleleSet));
 		}
 		
@@ -18,7 +21,7 @@ public class DefensorFactory<T> implements IndividualFactory<T> {
 	}
 
 	@Override
-	public Individual<T> getIndividual(List<Gene<? extends T>> genes) {
-		return new Defensor<T>(this, genes);
+	public Individual<Object> getIndividual(List<Gene<? extends Object>> genes) {
+		return new Defensor(this, genes);
 	}
 }

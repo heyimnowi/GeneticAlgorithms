@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import util.Props;
 import model.Couple;
 import model.Individual;
 import model.IndividualFactory;
@@ -16,24 +17,24 @@ import model.SelectionMethod;
 
 public class GeneticAlgorithm<T> {
 
-	// TODO
-	private static final SelectionMethod SELECTION_METHOD = SelectionMethod.UNIVERSAL;
-	private static final ReproductionMethod REPRODUCTION_METHOD = ReproductionMethod.RING;
-	private static final MutationMethod MUTATION_METHOD = MutationMethod.MULTI_GENE;
-	private static final ReplacementMethod REPLACEMENT_METHOD = ReplacementMethod.METHOD_1;
-	private static final int N = 5;
-	private static final int GENERATIONS = 2;
+	private static final int GENERATIONS = 10000; // TODO
 	
 	private int generation = 0;
 	
 	private Population<T> population;
 	
 	public void run(IndividualFactory<T> individualFactory) {
-		createPopulation(individualFactory, N);
+		createPopulation(individualFactory, Props.instance().getN());
+		System.out.println(population.getIndividuals().stream()
+				.mapToDouble(ind -> Math.round(ind.getFitness() * 100) / 100.0)
+				.max());
 		for (int i = 0; i < GENERATIONS; i++) {
-			System.out.println(population);
-			replacePopulation(REPLACEMENT_METHOD);
+//			System.out.println(population);
+			replacePopulation(Props.instance().getReplacementMethod1());
 		}
+		System.out.println(population.getIndividuals().stream()
+				.mapToDouble(ind -> Math.round(ind.getFitness() * 100) / 100.0)
+				.max());
 	}
 	
 	private void createPopulation(IndividualFactory<T> individualFactory, int N) {
@@ -60,9 +61,9 @@ public class GeneticAlgorithm<T> {
 	private Population<T> firstReplacementMethod(Population<T> population) {
 		List<Individual<T>> newIndividuals = new ArrayList<>();
 		for (int i = 0; i < population.size() / 2; i++) {
-			Couple<T> parents = new Couple<>(selectIndividuals(SELECTION_METHOD, 2));
-			List<Individual<T>> children = crossIndividuals(REPRODUCTION_METHOD, parents).toList();
-			children = mutateIndividuals(MUTATION_METHOD, children);
+			Couple<T> parents = new Couple<>(selectIndividuals(Props.instance().getSelectionMethod1(), 2));
+			List<Individual<T>> children = crossIndividuals(Props.instance().getReproductionMethod(), parents).toList();
+			children = mutateIndividuals(Props.instance().getMutationMethod(), children);
 			newIndividuals.addAll(children);
 		}
 		return new Population<>(newIndividuals, generation++);
@@ -70,7 +71,7 @@ public class GeneticAlgorithm<T> {
 	
 	private Population<T> secondReplacementMethod(Population<T> population) {
 		List<Individual<T>> newIndividuals = new ArrayList<>();
-		List<Individual<T>> children = getChildren(population, 3 /* TODO */);
+		List<Individual<T>> children = getChildren(population, Props.instance().getK());
 		newIndividuals.addAll(children);
 		List<Individual<T>> oldIndividuals = population.getIndividuals();
 		Collections.shuffle(oldIndividuals);
@@ -80,7 +81,7 @@ public class GeneticAlgorithm<T> {
 	
 	private Population<T> thirdReplacementMethod(Population<T> population) {
 		List<Individual<T>> newIndividuals = new ArrayList<>();		
-		List<Individual<T>> children = getChildren(population, 3 /* TODO */);
+		List<Individual<T>> children = getChildren(population, Props.instance().getK());
 		List<Individual<T>> oldIndividuals = population.getIndividuals();
 		Collections.shuffle(oldIndividuals);
 		newIndividuals.addAll(oldIndividuals.subList(0, population.size() - children.size()));
@@ -94,11 +95,11 @@ public class GeneticAlgorithm<T> {
 	}
 	
 	private List<Individual<T>> getChildren(Population<T> population, int K) {
-		List<Couple<T>> parents = makeCouples(selectIndividuals(SELECTION_METHOD, K));
+		List<Couple<T>> parents = makeCouples(selectIndividuals(Props.instance().getSelectionMethod1(), K));
 		return parents.stream()
-				.map(couple -> crossIndividuals(REPRODUCTION_METHOD, couple).toList())
+				.map(couple -> crossIndividuals(Props.instance().getReproductionMethod(), couple).toList())
 				.flatMap(List::stream)
-				.map(individual -> mutateIndividual(MUTATION_METHOD, individual))
+				.map(individual -> mutateIndividual(Props.instance().getMutationMethod(), individual))
 				.collect(Collectors.toList());
 	}
 	

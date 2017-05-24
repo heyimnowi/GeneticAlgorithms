@@ -4,12 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import util.Props;
 import model.Couple;
 import model.Gene;
 
 public class ReproductionAlgorithms {
 
-	private static final double p = 0.5; // TODO
+	private static final double p = Props.instance().getReproductionP();
 	
 	public static <T> Couple<T> onePoint(Couple<T> couple) {
 		int locus = new Random().nextInt(couple.chromosomeSize() + 1);

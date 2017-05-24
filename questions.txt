@@ -3,5 +3,5 @@
 3. Estructura == % de individuos que se repiten?
 4. Contenido == # veces que el fitness se mantiene igual?
 5. Entorno a un óptimo == existe al menos un individuo que supera un valor Foptimo?
-
+6. El multiplicador de los items va adentro de la sumatoria (es lo mismo que afuera, pero adentro de tanh)?
 

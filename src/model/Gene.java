@@ -11,7 +11,7 @@ public class Gene<T> {
 	}
 	
 	public Gene(AleleSet<T> aleleSet) {
-		this(aleleSet, aleleSet.getAlele());
+		this(aleleSet, aleleSet.getRandomAlele());
 	}
 	
 	public Gene<T> mutate() {

@@ -4,12 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import util.Props;
 import model.Gene;
 import model.Individual;
 
 public class MutationAlgorithms {
 
-	private static final double p = 0.3; // TODO
+	private static final double p = Props.instance().getMutationP();
 	
 	public static <T> Individual<T> singleGene(Individual<T> individual) {
 		return mutateGenes(individual, true);
