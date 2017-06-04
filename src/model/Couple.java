@@ -38,6 +38,10 @@ public class Couple<T> {
 		return Arrays.asList(individual1, individual2);
 	}
 	
+	public Couple<T> clone() {
+		return new Couple<>(individual1.clone(), individual2.clone());
+	}
+	
 	@Override
 	public String toString() {
 		return "Couple: (" + individual1 + ", " + individual2 + ")";

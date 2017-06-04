@@ -3,6 +3,7 @@ package algorithm;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -30,7 +31,6 @@ public class GeneticAlgorithm<T> {
 			if (generation % 100 == 0) {
 				System.out.println("Generation: " + generation);
 				System.out.println(Math.round(100 * EndingAlgorithms.getMaxFitness(population)) / 100.0);
-	//			System.out.println(population);
 			}
 			replacePopulation(Props.instance().getReplacementMethod());
 		}
@@ -55,6 +55,9 @@ public class GeneticAlgorithm<T> {
 		case METHOD_3:
 			this.population = thirdReplacementMethod(population);
 			break;
+		case GENERATIONAL_GAP:
+			this.population = generationalGap(population, Props.instance().getG());
+			break;
 		default:
 			throw new UnsupportedOperationException(
 					"Unknown replacement method: " + replacementMethod);
@@ -75,13 +78,7 @@ public class GeneticAlgorithm<T> {
 	}
 	
 	private Population<T> secondReplacementMethod(Population<T> population) {
-		List<Individual<T>> newIndividuals = new ArrayList<>();
-		List<Individual<T>> children = getChildren(population, Props.instance().getK());
-		newIndividuals.addAll(children);
-		List<Individual<T>> oldIndividuals = population.getIndividuals();
-		newIndividuals.addAll(clone(selectIndividuals(new Population<T>(oldIndividuals, generation),
-			Props.instance().getReplacementMethodP(), population.size() - children.size())));
-		return new Population<>(newIndividuals, generation++);
+		return generationalGap(population, Props.instance().getK() / (double) population.size());
 	}
 	
 	private Population<T> thirdReplacementMethod(Population<T> population) {
@@ -96,6 +93,17 @@ public class GeneticAlgorithm<T> {
 			.collect(Collectors.toList());
 		newIndividuals.addAll(clone(selectIndividuals(new Population<T>(oldIndividuals, generation),
 			Props.instance().getReplacementMethodP(), children.size())));
+		return new Population<>(newIndividuals, generation++);
+	}
+	
+	private Population<T> generationalGap(Population<T> population, double G) {
+		int k = (int) Math.round(G * population.size());
+		List<Individual<T>> newIndividuals = new ArrayList<>();		
+		List<Individual<T>> children = getChildren(population, k);
+		newIndividuals.addAll(children);
+		List<Individual<T>> oldIndividuals = population.getIndividuals();
+		newIndividuals.addAll(clone(selectIndividuals(new Population<T>(oldIndividuals, generation),
+			Props.instance().getReplacementMethodP(), population.size() - children.size())));
 		return new Population<>(newIndividuals, generation++);
 	}
 	
@@ -151,6 +159,9 @@ public class GeneticAlgorithm<T> {
 	}
 	
 	private Couple<T> crossIndividuals(ReproductionMethod reproductionMethod, Couple<T> couple) {
+		if (new Random().nextDouble() > Props.instance().getCrossoverP()) {
+			return couple.clone();
+		}
 		switch (reproductionMethod) {
 		case ONE_POINT:
 			return ReproductionAlgorithms.onePoint(couple);

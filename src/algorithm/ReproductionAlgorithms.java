@@ -10,7 +10,7 @@ import model.Gene;
 
 public class ReproductionAlgorithms {
 
-	private static final double p = Props.instance().getReproductionP();
+	private static final double p = Props.instance().getUniformReprP();
 	
 	public static <T> Couple<T> onePoint(Couple<T> couple) {
 		int locus = new Random().nextInt(couple.chromosomeSize() + 1);

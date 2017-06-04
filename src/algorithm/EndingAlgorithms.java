@@ -38,7 +38,6 @@ public class EndingAlgorithms {
 			acum += Math.min(individualsMap.getOrDefault(wrapped, 0), prevIndividualsMap.getOrDefault(wrapped, 0));
 		}
 		prevIndividualsMap = individualsMap;
-		System.out.println(acum);
 		return acum / (double) population.size() >= Props.instance().getStructure();
 	}
 	

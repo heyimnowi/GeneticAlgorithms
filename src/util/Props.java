@@ -47,13 +47,15 @@ public class Props {
 	private final int m;
 	// Reproduction
 	private final ReproductionMethod reproductionMethod;
-	private final double reproductionP;
+	private final double crossoverP;
+	private final double uniformReprP;
 	// Mutation
 	private final MutationMethod mutationMethod;
 	private final double mutationP;
 	// Replacement
 	private final ReplacementMethod replacementMethod;
 	private final double replacementMethodP;
+	private final double G;
 	// Ending condition
 	private Set<EndingMethod> endingMethods;
 	private int maxGenerations;
@@ -110,9 +112,11 @@ public class Props {
 			}
 			// Reproduction
 			this.reproductionMethod = ReproductionMethod.get(props.getProperty("reproduction_method").trim());
-			this.reproductionP = Double.parseDouble(props.getProperty("reproduction_p").trim());
+			this.crossoverP = Double.parseDouble(props.getProperty("crossover_p").trim());
+			checkProbability(crossoverP, "Crossover p");
+			this.uniformReprP = Double.parseDouble(props.getProperty("uniform_repr_p").trim());
 			if (reproductionMethod.equals(ReproductionMethod.UNIFORM)) {				
-				checkProbability(reproductionP, "Reproduction method p");
+				checkProbability(uniformReprP, "Uniform reproduction p");
 			}
 			// Mutation
 			this.mutationMethod = MutationMethod.get(props.getProperty("mutation_method").trim());
@@ -122,6 +126,8 @@ public class Props {
 			this.replacementMethod = ReplacementMethod.get(props.getProperty("replacement_method").trim());
 			this.replacementMethodP = Double.parseDouble(props.getProperty("replacement_method_1_p").trim());
 			checkProbability(replacementMethodP, "Replacement method p");
+			this.G = Double.parseDouble(props.getProperty("G").trim());
+			checkProbability(G, "G");
 			// Ending condition
 			this.endingMethods = Arrays.stream(props.getProperty("ending_methods").replaceAll(" ", "").split(","))
 					.map(str -> EndingMethod.get(str))
@@ -205,9 +211,13 @@ public class Props {
 	public ReproductionMethod getReproductionMethod() {
 		return reproductionMethod;
 	}
+	
+	public double getCrossoverP() {
+		return crossoverP;
+	}
 
-	public double getReproductionP() {
-		return reproductionP;
+	public double getUniformReprP() {
+		return uniformReprP;
 	}
 
 	public MutationMethod getMutationMethod() {
@@ -224,6 +234,10 @@ public class Props {
 
 	public double getReplacementMethodP() {
 		return replacementMethodP;
+	}
+	
+	public double getG() {
+		return G;
 	}
 
 	public Set<EndingMethod> getEndingMethods() {

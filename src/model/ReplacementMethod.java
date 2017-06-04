@@ -4,7 +4,7 @@ import java.util.Arrays;
 
 public enum ReplacementMethod {
 
-	METHOD_1, METHOD_2, METHOD_3;
+	METHOD_1, METHOD_2, METHOD_3, GENERATIONAL_GAP;
 	
 	public static ReplacementMethod get(String name) {
 		return Arrays.stream(ReplacementMethod.values())
