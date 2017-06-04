@@ -1,8 +1,12 @@
 package algorithm;
 
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Scanner;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -30,23 +34,44 @@ public class GeneticAlgorithm<T> {
 	private EndingAlgorithms endingAlgorithms = new EndingAlgorithms();
 	
 	public void run(IndividualFactory<T> individualFactory) {
-		generation = 0;
-		createPopulation(individualFactory, Props.instance().getN());
-		System.out.println(Math.round(1000 * endingAlgorithms.getMaxFitness(population)) / 1000.0);
-		while (!shouldEnd()) {
-//			System.out.println(Thread.currentThread().getName() + " " + population);
-			if (generation % 200 == 0) {
-				System.out.println("Generation: " + generation);
-				System.out.println(Math.round(1000 * endingAlgorithms.getMaxFitness(population)) / 1000.0);
+		AtomicBoolean stop = new AtomicBoolean(false);
+		Thread th = new Thread(() -> {
+			Scanner sc = new Scanner(System.in);
+			System.out.println("Reading...");
+			while (sc.hasNext() && !stop.get()) {
+				if (sc.nextLine().equals("STOP")) {
+					stop.set(true);
+					break;
+				}
 			}
-			replacePopulation(Props.instance().getReplacementMethod());
+			sc.close();
+		});
+		th.start();
+		try{
+			PrintWriter writer = new PrintWriter("fitness.csv", "UTF-8");
+			generation = 0;
+			createPopulation(individualFactory, Props.instance().getN());
+			System.out.println(Math.round(1000 * endingAlgorithms.getMaxFitness(population)) / 1000.0);
+			while (!shouldEnd() && !stop.get()) {
+				writer.println(endingAlgorithms.getMaxFitness(population));
+	//			System.out.println(Thread.currentThread().getName() + " " + population);
+				if (generation % 200 == 0) {
+					System.out.println("Generation: " + generation);
+					System.out.println(Math.round(1000 * endingAlgorithms.getMaxFitness(population)) / 1000.0);
+				}
+				replacePopulation(Props.instance().getReplacementMethod());
+			}
+			System.out.println("Generation: " + (generation - 1));
+			maxFitness = endingAlgorithms.getMaxFitness(population);
+			System.out.println("Max Fitness: " + Math.round(1000 * maxFitness) / 1000.0);
+			System.out.println(population.getIndividuals().stream()
+				.filter(ind -> ind.getFitness() == maxFitness)
+					.collect(Collectors.toSet()));
+			writer.close();
+		} catch (IOException e) {
+			System.out.println("Error writing fitness");
 		}
-		System.out.println("Generation: " + (generation - 1));
-		maxFitness = endingAlgorithms.getMaxFitness(population);
-		System.out.println("Max Fitness: " + Math.round(1000 * maxFitness) / 1000.0);
-		System.out.println(population.getIndividuals().stream()
-			.filter(ind -> ind.getFitness() == maxFitness)
-				.collect(Collectors.toSet()));
+		stop.set(true);
 	}
 	
 	private void createPopulation(IndividualFactory<T> individualFactory, int N) {

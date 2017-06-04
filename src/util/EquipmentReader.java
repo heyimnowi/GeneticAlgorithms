@@ -74,6 +74,7 @@ public class EquipmentReader {
 		while (taken++ < filenames.size()) {
 			System.out.println("Finished reading: " + completionService.take().get());
 		}
+		System.out.println("Done loading items!");
 		executor.shutdown();
 	}
 	
