@@ -35,7 +35,7 @@ public class GeneticAlgorithm<T> {
 		System.out.println(Math.round(1000 * endingAlgorithms.getMaxFitness(population)) / 1000.0);
 		while (!shouldEnd()) {
 //			System.out.println(Thread.currentThread().getName() + " " + population);
-			if (generation % 100 == 0) {
+			if (generation % 200 == 0) {
 				System.out.println("Generation: " + generation);
 				System.out.println(Math.round(1000 * endingAlgorithms.getMaxFitness(population)) / 1000.0);
 			}
