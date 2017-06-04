@@ -32,7 +32,7 @@ public class GeneticAlgorithm<T> {
 				System.out.println(Math.round(100 * EndingAlgorithms.getMaxFitness(population)) / 100.0);
 	//			System.out.println(population);
 			}
-			replacePopulation(Props.instance().getReplacementMethod1());
+			replacePopulation(Props.instance().getReplacementMethod());
 		}
 		System.out.println(Math.round(100 * EndingAlgorithms.getMaxFitness(population)) / 100.0);
 		System.out.println(population.getIndividuals().stream()
@@ -64,7 +64,9 @@ public class GeneticAlgorithm<T> {
 	private Population<T> firstReplacementMethod(Population<T> population) {
 		List<Individual<T>> newIndividuals = new ArrayList<>();
 		IntStream.range(0, population.size() / 2).forEach(i -> {
-			Couple<T> parents = new Couple<>(selectIndividuals(population, Props.instance().getSelectionMethod1(), 2));
+			SelectionMethod selectionMethod = i < (population.size() / 2) * Props.instance().getSelectionMethodP() ?
+					Props.instance().getSelectionMethod1() : Props.instance().getSelectionMethod2(); 
+			Couple<T> parents = new Couple<>(selectIndividuals(population, selectionMethod, 2));
 			List<Individual<T>> children = crossIndividuals(Props.instance().getReproductionMethod(), parents).toList();
 			children = mutateIndividuals(Props.instance().getMutationMethod(), children);
 			newIndividuals.addAll(children);
@@ -78,7 +80,7 @@ public class GeneticAlgorithm<T> {
 		newIndividuals.addAll(children);
 		List<Individual<T>> oldIndividuals = population.getIndividuals();
 		newIndividuals.addAll(clone(selectIndividuals(new Population<T>(oldIndividuals, generation),
-				Props.instance().getSelectionMethod1(), population.size() - children.size())));
+			Props.instance().getReplacementMethodP(), population.size() - children.size())));
 		return new Population<>(newIndividuals, generation++);
 	}
 	
@@ -87,23 +89,32 @@ public class GeneticAlgorithm<T> {
 		List<Individual<T>> children = getChildren(population, Props.instance().getK());
 		List<Individual<T>> oldIndividuals = population.getIndividuals();
 		newIndividuals.addAll(clone(selectIndividuals(new Population<T>(oldIndividuals, generation),
-				Props.instance().getSelectionMethod1(), population.size() - children.size())));
+			Props.instance().getReplacementMethodP(), population.size() - children.size())));
 		oldIndividuals.addAll(children);
 		oldIndividuals = oldIndividuals.stream()
 			.map(i -> i.clone())
 			.collect(Collectors.toList());
 		newIndividuals.addAll(clone(selectIndividuals(new Population<T>(oldIndividuals, generation),
-				Props.instance().getSelectionMethod1(), children.size())));
+			Props.instance().getReplacementMethodP(), children.size())));
 		return new Population<>(newIndividuals, generation++);
 	}
 	
 	private List<Individual<T>> getChildren(Population<T> population, int K) {
-		List<Couple<T>> parents = makeCouples(selectIndividuals(population, Props.instance().getSelectionMethod1(), K));
+		List<Couple<T>> parents = makeCouples(selectIndividuals(population, Props.instance().getSelectionMethodP(), K));
 		return parents.stream()
 				.map(couple -> crossIndividuals(Props.instance().getReproductionMethod(), couple).toList())
 				.flatMap(List::stream)
 				.map(individual -> mutateIndividual(Props.instance().getMutationMethod(), individual))
 				.collect(Collectors.toList());
+	}
+	
+	private List<Individual<T>> selectIndividuals(Population<T> population, double p, int K) {	
+		int k1 = (int) (K * p);
+		int k2 = K - k1;
+		List<Individual<T>> selected = new ArrayList<>();
+		selected.addAll(selectIndividuals(population, Props.instance().getSelectionMethod1(), k1));
+		selected.addAll(selectIndividuals(population, Props.instance().getSelectionMethod2(), k2));
+		return selected;
 	}
 	
 	private List<Individual<T>> selectIndividuals(Population<T> population, SelectionMethod selectionMethod, int K) {	

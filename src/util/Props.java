@@ -52,8 +52,7 @@ public class Props {
 	private final MutationMethod mutationMethod;
 	private final double mutationP;
 	// Replacement
-	private final ReplacementMethod replacementMethod1;
-	private final ReplacementMethod replacementMethod2;
+	private final ReplacementMethod replacementMethod;
 	private final double replacementMethodP;
 	// Ending condition
 	private Set<EndingMethod> endingMethods;
@@ -120,8 +119,7 @@ public class Props {
 			this.mutationP = Double.parseDouble(props.getProperty("mutation_p").trim());
 			checkProbability(mutationP, "Mutation method p");
 			// Replacement
-			this.replacementMethod1 = ReplacementMethod.get(props.getProperty("replacement_method_1").trim());
-			this.replacementMethod2 = ReplacementMethod.get(props.getProperty("replacement_method_2").trim());
+			this.replacementMethod = ReplacementMethod.get(props.getProperty("replacement_method").trim());
 			this.replacementMethodP = Double.parseDouble(props.getProperty("replacement_method_1_p").trim());
 			checkProbability(replacementMethodP, "Replacement method p");
 			// Ending condition
@@ -220,12 +218,8 @@ public class Props {
 		return mutationP;
 	}
 
-	public ReplacementMethod getReplacementMethod1() {
-		return replacementMethod1;
-	}
-
-	public ReplacementMethod getReplacementMethod2() {
-		return replacementMethod2;
+	public ReplacementMethod getReplacementMethod() {
+		return replacementMethod;
 	}
 
 	public double getReplacementMethodP() {
