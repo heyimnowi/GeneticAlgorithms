@@ -8,7 +8,7 @@ import model.DefensorFactory;
 public class Main {
 
 	public static void main(String[] args) throws InterruptedException, ExecutionException {
-		boolean TEST = true;
+		boolean TEST = false;
 		
 		int times = 1;
 		double genAvg = 0;
