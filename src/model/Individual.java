@@ -35,7 +35,7 @@ public abstract class Individual<T> {
 	public Individual<T> clone() {
 		return factory.getIndividual(genes);
 	}
-	
+
 	public String toString() {
 		return "Ind: [" + String.join(", ", genes.stream()
 				.map(g -> g.toString())
