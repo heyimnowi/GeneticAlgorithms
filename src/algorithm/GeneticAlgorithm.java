@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import model.Couple;
+import model.EndingMethod;
 import model.Individual;
 import model.IndividualFactory;
 import model.MutationMethod;
@@ -18,24 +19,25 @@ import util.Props;
 
 public class GeneticAlgorithm<T> {
 
-	private static final int GENERATIONS = 10000; // TODO
-	
 	private int generation = 0;
 	
 	private Population<T> population;
 	
 	public void run(IndividualFactory<T> individualFactory) {
 		createPopulation(individualFactory, Props.instance().getN());
-		System.out.println(population.getIndividuals().stream()
-				.mapToDouble(ind -> Math.round(ind.getFitness() * 100) / 100.0)
-				.max());
-		for (int i = 0; i < GENERATIONS; i++) {
-//			System.out.println(population);
+		System.out.println(Math.round(100 * EndingAlgorithms.getMaxFitness(population)) / 100.0);
+		while (!shouldEnd()) {
+			if (generation % 100 == 0) {
+				System.out.println("Generation: " + generation);
+				System.out.println(Math.round(100 * EndingAlgorithms.getMaxFitness(population)) / 100.0);
+	//			System.out.println(population);
+			}
 			replacePopulation(Props.instance().getReplacementMethod1());
 		}
+		System.out.println(Math.round(100 * EndingAlgorithms.getMaxFitness(population)) / 100.0);
 		System.out.println(population.getIndividuals().stream()
-				.mapToDouble(ind -> Math.round(ind.getFitness() * 100) / 100.0)
-				.max());
+				.filter(ind -> ind.getFitness() == EndingAlgorithms.getMaxFitness(population))
+				.collect(Collectors.toList()));
 	}
 	
 	private void createPopulation(IndividualFactory<T> individualFactory, int N) {
@@ -62,7 +64,7 @@ public class GeneticAlgorithm<T> {
 	private Population<T> firstReplacementMethod(Population<T> population) {
 		List<Individual<T>> newIndividuals = new ArrayList<>();
 		IntStream.range(0, population.size() / 2).forEach(i -> {
-			Couple<T> parents = new Couple<>(selectIndividuals(Props.instance().getSelectionMethod1(), 2));
+			Couple<T> parents = new Couple<>(selectIndividuals(population, Props.instance().getSelectionMethod1(), 2));
 			List<Individual<T>> children = crossIndividuals(Props.instance().getReproductionMethod(), parents).toList();
 			children = mutateIndividuals(Props.instance().getMutationMethod(), children);
 			newIndividuals.addAll(children);
@@ -75,8 +77,8 @@ public class GeneticAlgorithm<T> {
 		List<Individual<T>> children = getChildren(population, Props.instance().getK());
 		newIndividuals.addAll(children);
 		List<Individual<T>> oldIndividuals = population.getIndividuals();
-		Collections.shuffle(oldIndividuals);
-		newIndividuals.addAll(oldIndividuals.subList(0, population.size() - children.size()));
+		newIndividuals.addAll(clone(selectIndividuals(new Population<T>(oldIndividuals, generation),
+				Props.instance().getSelectionMethod1(), population.size() - children.size())));
 		return new Population<>(newIndividuals, generation++);
 	}
 	
@@ -84,19 +86,19 @@ public class GeneticAlgorithm<T> {
 		List<Individual<T>> newIndividuals = new ArrayList<>();		
 		List<Individual<T>> children = getChildren(population, Props.instance().getK());
 		List<Individual<T>> oldIndividuals = population.getIndividuals();
-		Collections.shuffle(oldIndividuals);
-		newIndividuals.addAll(oldIndividuals.subList(0, population.size() - children.size()));
+		newIndividuals.addAll(clone(selectIndividuals(new Population<T>(oldIndividuals, generation),
+				Props.instance().getSelectionMethod1(), population.size() - children.size())));
 		oldIndividuals.addAll(children);
-		Collections.shuffle(oldIndividuals);
-		newIndividuals.addAll(oldIndividuals.subList(0, children.size())
-				.stream()
-				.map(i -> i.clone())
-				.collect(Collectors.toList()));
+		oldIndividuals = oldIndividuals.stream()
+			.map(i -> i.clone())
+			.collect(Collectors.toList());
+		newIndividuals.addAll(clone(selectIndividuals(new Population<T>(oldIndividuals, generation),
+				Props.instance().getSelectionMethod1(), children.size())));
 		return new Population<>(newIndividuals, generation++);
 	}
 	
 	private List<Individual<T>> getChildren(Population<T> population, int K) {
-		List<Couple<T>> parents = makeCouples(selectIndividuals(Props.instance().getSelectionMethod1(), K));
+		List<Couple<T>> parents = makeCouples(selectIndividuals(population, Props.instance().getSelectionMethod1(), K));
 		return parents.stream()
 				.map(couple -> crossIndividuals(Props.instance().getReproductionMethod(), couple).toList())
 				.flatMap(List::stream)
@@ -104,7 +106,7 @@ public class GeneticAlgorithm<T> {
 				.collect(Collectors.toList());
 	}
 	
-	private List<Individual<T>> selectIndividuals(SelectionMethod selectionMethod, int K) {	
+	private List<Individual<T>> selectIndividuals(Population<T> population, SelectionMethod selectionMethod, int K) {	
 		switch (selectionMethod) {
 		case ELITE:
 			return SelectionAlgorithms.elite(population, K);	
@@ -169,5 +171,35 @@ public class GeneticAlgorithm<T> {
 			throw new UnsupportedOperationException(
 					"Unknown mutation method: " + mutationMethod);
 		}
+	}
+	
+	private boolean shouldEnd() {
+		boolean shouldEnd = false;
+		for (EndingMethod endingMethod : Props.instance().getEndingMethods()) {
+			switch (endingMethod) {
+			case CONTENT:
+				shouldEnd = shouldEnd || EndingAlgorithms.content(population);
+				break;
+			case FITNESS_MIN:
+				shouldEnd = shouldEnd || EndingAlgorithms.fitnessMin(population);
+				break;
+			case MAX_GENERATIONS:
+				shouldEnd = shouldEnd || EndingAlgorithms.maxGenerations(population);
+				break;
+			case STRUCTURE:
+				shouldEnd = shouldEnd || EndingAlgorithms.structure(population);
+				break;
+			default:
+				throw new UnsupportedOperationException(
+						"Unknown ending method: " + endingMethod);
+			}
+		}
+		return shouldEnd;
+	}
+	
+	private List<Individual<T>> clone(List<Individual<T>> list) {
+		return list.stream()
+				.map(ind -> ind.clone())
+				.collect(Collectors.toList());
 	}
 }

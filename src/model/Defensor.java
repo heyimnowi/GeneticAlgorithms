@@ -63,10 +63,9 @@ public class Defensor extends Individual<Object> {
 	}
 	
 	public String toString() {
-		return Props.instance().debug() ? "Ind: [" + String.join(", ", getGenes().stream()
-				.skip(1)
+		return "Ind: [" + String.join(", ", getGenes().stream()
 				.map(g -> g.toString())
-				.collect(Collectors.toList())) + "]"
-				: "Ind(" + Math.round(getFitness() * 100) / 100.0 + ")";
+				.collect(Collectors.toList())) + "]";
+//				: "Ind(" + Math.round(getFitness() * 100) / 100.0 + ")";
 	}
 }

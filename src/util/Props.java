@@ -4,9 +4,13 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+import model.EndingMethod;
 import model.MutationMethod;
 import model.ReplacementMethod;
 import model.ReproductionMethod;
@@ -49,6 +53,12 @@ public class Props {
 	private final ReplacementMethod replacementMethod1;
 	private final ReplacementMethod replacementMethod2;
 	private final double replacementMethodP;
+	// Ending condition
+	private Set<EndingMethod> endingMethods;
+	private int maxGenerations;
+	private double fitnessMin;
+	private double structure;
+	private double content;
 	// Player
 	private final double attMult;
 	private final double defMult;
@@ -83,13 +93,15 @@ public class Props {
 			}
 			this.T = Double.parseDouble(props.getProperty("T").trim());
 			this.m = Integer.parseInt(props.getProperty("m").trim());
-			if (K < 2 || K > N) {
-				throw new IllegalArgumentException("K must be between 2 and N.");
+			if (m < 2 || m > K) {
+				throw new IllegalArgumentException("M must be between 2 and K.");
 			}
 			// Reproduction
 			this.reproductionMethod = ReproductionMethod.get(props.getProperty("reproduction_method").trim());
 			this.reproductionP = Double.parseDouble(props.getProperty("reproduction_p").trim());
-			checkProbability(reproductionP, "Reproduction method p");
+			if (reproductionMethod.equals(ReproductionMethod.UNIFORM)) {				
+				checkProbability(reproductionP, "Reproduction method p");
+			}
 			// Mutation
 			this.mutationMethod = MutationMethod.get(props.getProperty("mutation_method").trim());
 			this.mutationP = Double.parseDouble(props.getProperty("mutation_p").trim());
@@ -99,6 +111,30 @@ public class Props {
 			this.replacementMethod2 = ReplacementMethod.get(props.getProperty("replacement_method_2").trim());
 			this.replacementMethodP = Double.parseDouble(props.getProperty("replacement_method_1_p").trim());
 			checkProbability(replacementMethodP, "Replacement method p");
+			// Ending condition
+			this.endingMethods = Arrays.stream(props.getProperty("ending_methods").replaceAll(" ", "").split(","))
+					.map(str -> EndingMethod.get(str))
+					.collect(Collectors.toSet());
+			if (this.endingMethods.contains(EndingMethod.ALL)) {
+				this.endingMethods = new HashSet<>(Arrays.asList(EndingMethod.values()));
+				this.endingMethods.remove(EndingMethod.ALL);
+			}
+			this.maxGenerations = Integer.parseInt(props.getProperty("max_generations").trim());
+			if (this.endingMethods.contains(EndingMethod.MAX_GENERATIONS) && maxGenerations <= 0) {
+				throw new IllegalArgumentException("Max generations must be greater than 0.");
+			}
+			this.fitnessMin = Double.parseDouble(props.getProperty("fitness_min").trim());
+			if (this.endingMethods.contains(EndingMethod.FITNESS_MIN) && fitnessMin <= 0) {
+				throw new IllegalArgumentException("Min fitness must be greater than 0.");
+			}
+			this.structure = Double.parseDouble(props.getProperty("structure").trim());
+			if (this.endingMethods.contains(EndingMethod.STRUCTURE)) {
+				checkProbability(structure, "Structure percentage");
+			}
+			this.content = Double.parseDouble(props.getProperty("content").trim());
+			if (this.endingMethods.contains(EndingMethod.CONTENT) && content < 1) {
+				throw new IllegalArgumentException("Content must be greater than 1.");
+			}
 			// Player
 			this.attMult = Double.parseDouble(props.getProperty("att_mult").trim());
 			this.defMult = Double.parseDouble(props.getProperty("def_mult").trim());
@@ -111,7 +147,7 @@ public class Props {
 			this.equipmentDirectory = props.getProperty("equipment_directory").trim();
 			this.equipmentFiles = Arrays.asList(props.getProperty("equipment_files").replaceAll(" ", "").split(","));
 			// Other
-			this.debug = props.getProperty("debug").trim().equals(true);
+			this.debug = props.getProperty("debug").trim().equals("true");
 		}
 	}
 	
@@ -175,6 +211,26 @@ public class Props {
 		return replacementMethodP;
 	}
 
+	public Set<EndingMethod> getEndingMethods() {
+		return endingMethods;
+	}
+
+	public int getMaxGenerations() {
+		return maxGenerations;
+	}
+
+	public double getFitnessMin() {
+		return fitnessMin;
+	}
+
+	public double getStructure() {
+		return structure;
+	}
+
+	public double getContent() {
+		return content;
+	}
+	
 	public double getAttMult() {
 		return attMult;
 	}

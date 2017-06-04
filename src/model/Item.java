@@ -46,9 +46,54 @@ public class Item {
 		return health;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		long temp;
+		temp = Double.doubleToLongBits(agility);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		temp = Double.doubleToLongBits(experience);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		temp = Double.doubleToLongBits(force);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		temp = Double.doubleToLongBits(health);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		result = prime * result + id;
+		temp = Double.doubleToLongBits(resistance);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Item other = (Item) obj;
+		if (Double.doubleToLongBits(agility) != Double
+				.doubleToLongBits(other.agility))
+			return false;
+		if (Double.doubleToLongBits(experience) != Double
+				.doubleToLongBits(other.experience))
+			return false;
+		if (Double.doubleToLongBits(force) != Double
+				.doubleToLongBits(other.force))
+			return false;
+		if (Double.doubleToLongBits(health) != Double
+				.doubleToLongBits(other.health))
+			return false;
+		if (id != other.id)
+			return false;
+		if (Double.doubleToLongBits(resistance) != Double
+				.doubleToLongBits(other.resistance))
+			return false;
+		return true;
+	}
+
 	@Override
 	public String toString() {
 		return "Item [id=" + id + ((Props.instance().debug()) ? 
