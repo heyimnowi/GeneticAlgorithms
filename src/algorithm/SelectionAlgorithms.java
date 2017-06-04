@@ -17,7 +17,9 @@ import model.Population;
 
 public class SelectionAlgorithms {
 	
-	private static final double T = Props.instance().getT();
+	private static final double tempDuration = Props.instance().getTempDuration();
+	private static final double minTemp = Props.instance().getMinTemp();
+	private static final double initialTemp = Props.instance().getInitialTemp();
 	private static final int M = Props.instance().getM();
 	
 	public static <T> List<Individual<T>> elite(Population<T> population, int K) {
@@ -59,11 +61,12 @@ public class SelectionAlgorithms {
 	}
 	
 	public static <T> List<Individual<T>> boltzmann(Population<T> population, int K) {
+		double T = getTemperature(population.getGeneration());
 		Map<Individual<T>, Double> expFitnessT = getFitnessMap(population).entrySet().stream()
 				.collect(Collectors.toMap(e -> e.getKey(), e -> Math.exp(e.getValue()/ T)));
 		double avgExpFitnessT = expFitnessT.entrySet().stream()
 				.mapToDouble(Map.Entry::getValue)
-				.reduce(0, Double::sum);
+				.sum();
 		Map<Individual<T>, Double> expectedLife = expFitnessT.entrySet()
 				.stream()
 				.collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue() / avgExpFitnessT));
@@ -140,5 +143,11 @@ public class SelectionAlgorithms {
 		return fitnessMap.entrySet()
 				.stream()
 				.collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue() / fitnessTotal));
+	}
+	
+	private static double getTemperature(int t) {
+		return Math.exp((-1 / tempDuration) * t
+					+ Math.log(Math.exp((1 / tempDuration)) * (initialTemp - minTemp)))
+				+ minTemp;
 	}
 }

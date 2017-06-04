@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 public class Population<T> {
 
 	private final Collection<Individual<T>> individuals;
-	private final double generation;
+	private final int generation;
 	
 	public Population(Collection<Individual<T>> individuals, int generation) {
 		this.individuals = individuals;
@@ -30,7 +30,7 @@ public class Population<T> {
 		return individuals.size();
 	}
 
-	public double getGeneration() {
+	public int getGeneration() {
 		return generation;
 	}
 	

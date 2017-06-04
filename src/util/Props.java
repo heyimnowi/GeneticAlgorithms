@@ -41,7 +41,9 @@ public class Props {
 	private final SelectionMethod selectionMethod2;
 	private final double selectionMethodP;
 	private final int K;
-	private final double T;
+	private final double tempDuration;
+	private final double minTemp;
+	private final double initialTemp;
 	private final int m;
 	// Reproduction
 	private final ReproductionMethod reproductionMethod;
@@ -91,7 +93,18 @@ public class Props {
 			if (K < 2 || K > N) {
 				throw new IllegalArgumentException("K must be between 2 and N.");
 			}
-			this.T = Double.parseDouble(props.getProperty("T").trim());
+			this.tempDuration = Double.parseDouble(props.getProperty("tempDuration").trim());
+			if (tempDuration <= 0) {
+				throw new IllegalArgumentException("TempDuration must be positive.");
+			}
+			this.minTemp = Double.parseDouble(props.getProperty("minTemp").trim());
+			if (minTemp < 0) {
+				throw new IllegalArgumentException("TempDuration must be positive or cero.");
+			}
+			this.initialTemp = Double.parseDouble(props.getProperty("initialTemp").trim());
+			if (initialTemp < minTemp) {
+				throw new IllegalArgumentException("InitialTemp should be greater than or equal to minTemp.");
+			}
 			this.m = Integer.parseInt(props.getProperty("m").trim());
 			if (m < 2 || m > K) {
 				throw new IllegalArgumentException("M must be between 2 and K.");
@@ -175,8 +188,16 @@ public class Props {
 		return K;
 	}
 
-	public double getT() {
-		return T;
+	public double getTempDuration() {
+		return tempDuration;
+	}
+
+	public double getMinTemp() {
+		return minTemp;
+	}
+
+	public double getInitialTemp() {
+		return initialTemp;
 	}
 
 	public int getM() {
