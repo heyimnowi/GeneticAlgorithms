@@ -23,7 +23,11 @@ public class Props {
 	public static Props instance() {
 		if (Props._instance == null) {
 			try {
-				Props._instance = new Props();
+				synchronized (Props.class) {
+					if(_instance == null) {
+						 Props._instance = new Props();
+					 }
+				}
 			} catch (Exception e) {
 				throw new RuntimeException("Error while loading props.", e);
 			}

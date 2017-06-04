@@ -3,7 +3,6 @@ package algorithm;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -17,27 +16,37 @@ import model.ReplacementMethod;
 import model.ReproductionMethod;
 import model.SelectionMethod;
 import util.Props;
+import util.RandomUtils;
 
 public class GeneticAlgorithm<T> {
 
 	private int generation = 0;
+	private double maxFitness = 0;
 	
 	private Population<T> population;
+	private SelectionAlgorithms selectionAlgorithms = new SelectionAlgorithms();
+	private ReproductionAlgorithms reproductionAlgorithms = new ReproductionAlgorithms();
+	private MutationAlgorithms mutationAlgorithms = new MutationAlgorithms();
+	private EndingAlgorithms endingAlgorithms = new EndingAlgorithms();
 	
 	public void run(IndividualFactory<T> individualFactory) {
+		generation = 0;
 		createPopulation(individualFactory, Props.instance().getN());
-		System.out.println(Math.round(100 * EndingAlgorithms.getMaxFitness(population)) / 100.0);
+		System.out.println(Math.round(1000 * endingAlgorithms.getMaxFitness(population)) / 1000.0);
 		while (!shouldEnd()) {
+//			System.out.println(Thread.currentThread().getName() + " " + population);
 			if (generation % 100 == 0) {
 				System.out.println("Generation: " + generation);
-				System.out.println(Math.round(100 * EndingAlgorithms.getMaxFitness(population)) / 100.0);
+				System.out.println(Math.round(1000 * endingAlgorithms.getMaxFitness(population)) / 1000.0);
 			}
 			replacePopulation(Props.instance().getReplacementMethod());
 		}
-		System.out.println(Math.round(100 * EndingAlgorithms.getMaxFitness(population)) / 100.0);
+		System.out.println("Generation: " + (generation - 1));
+		maxFitness = endingAlgorithms.getMaxFitness(population);
+		System.out.println("Max Fitness: " + Math.round(1000 * maxFitness) / 1000.0);
 		System.out.println(population.getIndividuals().stream()
-				.filter(ind -> ind.getFitness() == EndingAlgorithms.getMaxFitness(population))
-				.collect(Collectors.toList()));
+			.filter(ind -> ind.getFitness() == maxFitness)
+				.collect(Collectors.toSet()));
 	}
 	
 	private void createPopulation(IndividualFactory<T> individualFactory, int N) {
@@ -128,21 +137,21 @@ public class GeneticAlgorithm<T> {
 	private List<Individual<T>> selectIndividuals(Population<T> population, SelectionMethod selectionMethod, int K) {	
 		switch (selectionMethod) {
 		case ELITE:
-			return SelectionAlgorithms.elite(population, K);	
+			return selectionAlgorithms.elite(population, K);	
 		case BOLTZMANN:
-			return SelectionAlgorithms.boltzmann(population, K);
+			return selectionAlgorithms.boltzmann(population, K);
 		case RANDOM:
-			return SelectionAlgorithms.random(population, K);
+			return selectionAlgorithms.random(population, K);
 		case RANKING:
-			return SelectionAlgorithms.ranking(population, K);
+			return selectionAlgorithms.ranking(population, K);
 		case ROULETTE:
-			return SelectionAlgorithms.roulette(population, K);
+			return selectionAlgorithms.roulette(population, K);
 		case TOURNAMENT_DET:
-			return SelectionAlgorithms.detTournament(population, K);
+			return selectionAlgorithms.detTournament(population, K);
 		case TOURNAMENT_PROB:
-			return SelectionAlgorithms.probTournament(population, K);
+			return selectionAlgorithms.probTournament(population, K);
 		case UNIVERSAL:
-			return SelectionAlgorithms.universal(population, K);
+			return selectionAlgorithms.universal(population, K);
 		default:
 			throw new UnsupportedOperationException(
 					"Unknown selection method: " + selectionMethod);
@@ -159,18 +168,18 @@ public class GeneticAlgorithm<T> {
 	}
 	
 	private Couple<T> crossIndividuals(ReproductionMethod reproductionMethod, Couple<T> couple) {
-		if (new Random().nextDouble() > Props.instance().getCrossoverP()) {
+		if (RandomUtils.instance().nextDouble() > Props.instance().getCrossoverP()) {
 			return couple.clone();
 		}
 		switch (reproductionMethod) {
 		case ONE_POINT:
-			return ReproductionAlgorithms.onePoint(couple);
+			return reproductionAlgorithms.onePoint(couple);
 		case DOUBLE_POINT:
-			return ReproductionAlgorithms.twoPoints(couple);
+			return reproductionAlgorithms.twoPoints(couple);
 		case RING:
-			return ReproductionAlgorithms.ring(couple);
+			return reproductionAlgorithms.ring(couple);
 		case UNIFORM:
-			return ReproductionAlgorithms.uniform(couple);
+			return reproductionAlgorithms.uniform(couple);
 		default:
 			throw new UnsupportedOperationException(
 					"Unknown reproduction method: " + reproductionMethod);
@@ -186,9 +195,9 @@ public class GeneticAlgorithm<T> {
 	private Individual<T> mutateIndividual(MutationMethod mutationMethod, Individual<T> individual) {
 		switch (mutationMethod) {
 		case SINGLE_GENE:
-			return MutationAlgorithms.singleGene(individual);
+			return mutationAlgorithms.singleGene(individual);
 		case MULTI_GENE:
-			return MutationAlgorithms.multiGene(individual);
+			return mutationAlgorithms.multiGene(individual);
 		default:
 			throw new UnsupportedOperationException(
 					"Unknown mutation method: " + mutationMethod);
@@ -200,16 +209,16 @@ public class GeneticAlgorithm<T> {
 		for (EndingMethod endingMethod : Props.instance().getEndingMethods()) {
 			switch (endingMethod) {
 			case CONTENT:
-				shouldEnd = shouldEnd || EndingAlgorithms.content(population);
+				shouldEnd = shouldEnd || endingAlgorithms.content(population);
 				break;
 			case FITNESS_MIN:
-				shouldEnd = shouldEnd || EndingAlgorithms.fitnessMin(population);
+				shouldEnd = shouldEnd || endingAlgorithms.fitnessMin(population);
 				break;
 			case MAX_GENERATIONS:
-				shouldEnd = shouldEnd || EndingAlgorithms.maxGenerations(population);
+				shouldEnd = shouldEnd || endingAlgorithms.maxGenerations(population);
 				break;
 			case STRUCTURE:
-				shouldEnd = shouldEnd || EndingAlgorithms.structure(population);
+				shouldEnd = shouldEnd || endingAlgorithms.structure(population);
 				break;
 			default:
 				throw new UnsupportedOperationException(
@@ -223,5 +232,27 @@ public class GeneticAlgorithm<T> {
 		return list.stream()
 				.map(ind -> ind.clone())
 				.collect(Collectors.toList());
+	}
+
+	/**
+	 * @return the generation
+	 */
+	public int getGeneration() {
+		return generation;
+	}
+
+	/**
+	 * @param generation the generation to set
+	 */
+	public void setGeneration(int generation) {
+		this.generation = generation;
+	}
+
+	public double getMaxFitness() {
+		return maxFitness;
+	}
+
+	public void setMaxFitness(double maxFitness) {
+		this.maxFitness = maxFitness;
 	}
 }

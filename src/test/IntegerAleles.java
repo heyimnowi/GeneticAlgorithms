@@ -1,12 +1,11 @@
 package test;
 
-import java.util.Random;
-
 import model.AleleSet;
+import util.RandomUtils;
 
 public class IntegerAleles implements AleleSet<Integer> {
 	@Override
 	public Integer getRandomAlele() {
-		return new Random().nextInt(10);
+		return RandomUtils.instance().nextInt(10);
 	}
 }

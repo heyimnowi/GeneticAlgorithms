@@ -2,24 +2,24 @@ package algorithm;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
-import util.Props;
 import model.Couple;
 import model.Gene;
+import util.Props;
+import util.RandomUtils;
 
 public class ReproductionAlgorithms {
 
 	private static final double p = Props.instance().getUniformReprP();
 	
-	public static <T> Couple<T> onePoint(Couple<T> couple) {
-		int locus = new Random().nextInt(couple.chromosomeSize() + 1);
+	public <T> Couple<T> onePoint(Couple<T> couple) {
+		int locus = RandomUtils.instance().nextInt(couple.chromosomeSize() + 1);
 		return between(couple, locus, couple.chromosomeSize(), false);
 	}
 	
-	public static <T> Couple<T> twoPoints(Couple<T> couple) {
-		int locusStart = new Random().nextInt(couple.chromosomeSize() + 1);
-		int locusEnd = new Random().nextInt(couple.chromosomeSize() + 1);
+	public <T> Couple<T> twoPoints(Couple<T> couple) {
+		int locusStart = RandomUtils.instance().nextInt(couple.chromosomeSize() + 1);
+		int locusEnd = RandomUtils.instance().nextInt(couple.chromosomeSize() + 1);
 		if (locusEnd < locusStart) {
 			locusStart = locusStart ^ locusEnd;
 			locusEnd = locusStart ^ locusEnd;
@@ -28,9 +28,9 @@ public class ReproductionAlgorithms {
 		return between(couple, locusStart, locusEnd, false);
 	}
 	
-	public static <T> Couple<T> ring(Couple<T> couple) {
-		int locusStart = new Random().nextInt(couple.chromosomeSize());
-		int l = new Random().nextInt(couple.chromosomeSize() / 2 + 2) + 1;
+	public <T> Couple<T> ring(Couple<T> couple) {
+		int locusStart = RandomUtils.instance().nextInt(couple.chromosomeSize());
+		int l = RandomUtils.instance().nextInt(couple.chromosomeSize() / 2 + 2) + 1;
 		int locusEnd = (locusStart + l) % couple.chromosomeSize();
 		boolean invert = false;
 		if (locusEnd < locusStart) {
@@ -42,13 +42,13 @@ public class ReproductionAlgorithms {
 		return between(couple, locusStart, locusEnd, invert);
 	}
 	
-	public static <T> Couple<T> uniform(Couple<T> couple) {
+	public <T> Couple<T> uniform(Couple<T> couple) {
 		List<Gene<? extends T>> genes1 = new ArrayList<>();
 		List<Gene<? extends T>> genes2 = new ArrayList<>();
 		for (int i = 0; i < couple.chromosomeSize(); i++) {
 			Gene<? extends T> gene1 = couple.getIndividual1().getGene(i);
 			Gene<? extends T> gene2 = couple.getIndividual2().getGene(i);
-			if (gene1.equals(gene2) || new Random().nextDouble() >= p) {
+			if (gene1.equals(gene2) || RandomUtils.instance().nextDouble() >= p) {
 				genes1.add(gene1);
 				genes2.add(gene2);
 			} else {
@@ -59,7 +59,7 @@ public class ReproductionAlgorithms {
 		return makeCouple(couple, genes1, genes2);
 	}
 	
-	private static <T> Couple<T> between(Couple<T> couple, int start, int end, boolean invert) {
+	private <T> Couple<T> between(Couple<T> couple, int start, int end, boolean invert) {
 		List<Gene<? extends T>> genes1 = new ArrayList<>();
 		List<Gene<? extends T>> genes2 = new ArrayList<>();
 		for (int i = 0; i < couple.chromosomeSize(); i++) {
@@ -79,7 +79,7 @@ public class ReproductionAlgorithms {
 		return makeCouple(couple, genes1, genes2);
 	}
 	
-	private static <T> Couple<T> makeCouple(Couple<T> couple, 
+	private <T> Couple<T> makeCouple(Couple<T> couple, 
 			List<Gene<? extends T>> genes1, List<Gene<? extends T>> genes2) {
 		return new Couple<>(couple.getIndividual1().mutate(genes1), couple.getIndividual2().mutate(genes2));
 	}

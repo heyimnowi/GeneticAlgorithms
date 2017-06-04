@@ -4,6 +4,7 @@ import util.Props;
 
 public class Item {
 
+	private final String name;
 	private final int id;
 	private final double force;
 	private final double agility;
@@ -11,9 +12,10 @@ public class Item {
 	private final double resistance;
 	private final double health;
 	
-	public Item(int id, double force, double agility, double experience,
+	public Item(String name, int id, double force, double agility, double experience,
 			double resistance, double health) {
 		super();
+		this.name = name;
 		this.id = id;
 		this.force = force;
 		this.agility = agility;
@@ -96,7 +98,7 @@ public class Item {
 
 	@Override
 	public String toString() {
-		return "Item [id=" + id + ((Props.instance().debug()) ? 
+		return name + " [id=" + id + ((Props.instance().debug()) ? 
 					(", force=" + force + ", agility=" + agility
 					+ ", experience=" + experience + ", resistance=" + resistance
 					+ ", health=" + health) : "") 

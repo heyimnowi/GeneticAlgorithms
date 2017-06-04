@@ -9,19 +9,19 @@ import model.Population;
 
 public class EndingAlgorithms {
 	
-	private static Map<IndividualWrapper<?>, Integer> prevIndividualsMap;
-	private static int contentCount = 0;
-	private static Double prevMaxFitness = null;
+	private Map<IndividualWrapper<?>, Integer> prevIndividualsMap;
+	private int contentCount = 0;
+	private Double prevMaxFitness = null;
 	
-	public static <T> boolean maxGenerations(Population<T> population) {
+	public <T> boolean maxGenerations(Population<T> population) {
 		return population.getGeneration() >= Props.instance().getMaxGenerations();
 	}
 	
-	public static <T> boolean fitnessMin(Population<T> population) {
+	public <T> boolean fitnessMin(Population<T> population) {
 		return getMaxFitness(population) >= Props.instance().getFitnessMin();
 	}
 	
-	public static <T> boolean structure(Population<T> population) {
+	public <T> boolean structure(Population<T> population) {
 		Map<IndividualWrapper<?>, Integer> individualsMap = new HashMap<>();
 		for (Individual<T> ind: population.getIndividuals()) {
 			IndividualWrapper<?> wrapped = new IndividualWrapper<>(ind);
@@ -41,7 +41,7 @@ public class EndingAlgorithms {
 		return acum / (double) population.size() >= Props.instance().getStructure();
 	}
 	
-	public static <T> boolean content(Population<T> population) {
+	public <T> boolean content(Population<T> population) {
 		double maxFitness = getMaxFitness(population);
 		if (prevMaxFitness != null && maxFitness == prevMaxFitness) {
 			contentCount++;
@@ -52,14 +52,14 @@ public class EndingAlgorithms {
 		return contentCount >= Props.instance().getContent();
 	}
 	
-	static <T> double getMaxFitness(Population<T> population) {
+	<T> double getMaxFitness(Population<T> population) {
 		return population.getIndividuals().stream()
 				.mapToDouble(ind -> ind.getFitness())
 				.max()
 				.orElseThrow(() -> new IllegalStateException("Population is empty."));
 	}
 	
-	private static class IndividualWrapper<T> {
+	private class IndividualWrapper<T> {
 		private final Individual<T> individual;
 
 		public IndividualWrapper(Individual<T> individual) {

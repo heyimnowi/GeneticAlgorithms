@@ -1,12 +1,51 @@
 package algorithm;
 
+import java.util.concurrent.CompletionService;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import model.DefensorFactory;
 
 
 public class Main {
 
-	public static void main(String[] args) {
-		GeneticAlgorithm<Object> geneticAlgorithms = new GeneticAlgorithm<>();
-		geneticAlgorithms.run(new DefensorFactory());
+	public static void main(String[] args) throws InterruptedException, ExecutionException {
+		boolean TEST = true;
+		
+		int times = 1;
+		double genAvg = 0;
+		double maxFitAvg = 0;
+		if (TEST) {
+			times = 10;
+		}
+		ExecutorService executor = Executors.newFixedThreadPool(10);
+		CompletionService<GeneticAlgorithm<Object>> completionService = 
+				new ExecutorCompletionService<>(executor);
+		DefensorFactory factory = new DefensorFactory();
+		
+		for (int i = 0; i < times; i++) {
+			completionService.submit(() -> {
+				GeneticAlgorithm<Object> geneticAlgorithms = new GeneticAlgorithm<>();
+				geneticAlgorithms.run(factory);
+				return geneticAlgorithms;
+			});
+//			GeneticAlgorithm<Object> genAlg = completionService.take().get();
+//			genAvg += genAlg.getGeneration() - 1;
+//			maxFitAvg += genAlg.getMaxFitness();
+		}
+		
+		int taken = 0;
+		while (taken++ < times) {
+			GeneticAlgorithm<Object> genAlg = completionService.take().get();
+			genAvg += genAlg.getGeneration() - 1;
+			maxFitAvg += genAlg.getMaxFitness();
+		}
+		executor.shutdown();
+		
+		genAvg /= times;
+		maxFitAvg /= times;
+		System.out.println("Gen avg: " + genAvg + " maxFitAvg: " + maxFitAvg);
 	}
 }
