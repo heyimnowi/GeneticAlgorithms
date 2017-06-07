@@ -1,7 +1,0 @@
-1. Hay que usar métodos de selección a la hora de hacer reemplazo? Si si, cuales/en que proporción?
-2. Hay que implementar brecha generacional o selección mixta?
-3. Estructura == % de individuos que se repiten?
-4. Contenido == # veces que el fitness se mantiene igual?
-5. Entorno a un óptimo == existe al menos un individuo que supera un valor Foptimo?
-6. El multiplicador de los items va adentro de la sumatoria (es lo mismo que afuera, pero adentro de tanh)?
-
