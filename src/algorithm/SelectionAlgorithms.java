@@ -146,8 +146,6 @@ public class SelectionAlgorithms {
 	}
 	
 	private static double getTemperature(int t) {
-		return Math.exp((-1 / tempDuration) * t
-					+ Math.log(Math.exp((1 / tempDuration)) * (initialTemp - minTemp)))
-				+ minTemp;
+		return Math.exp((-1 / tempDuration) * t + Math.log(initialTemp - minTemp)) + minTemp;
 	}
 }
